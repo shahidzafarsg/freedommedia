@@ -1,0 +1,12 @@
+bin/
+obj/
+release/
+publish/
+out/
+dist/
+*.user
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vs/

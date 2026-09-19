@@ -1,0 +1,64 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FreedomMedia.App.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <Color x:Key="AccentColor">#5B8CFF</Color>
+        <Color x:Key="AccentColor2">#14B8A6</Color>
+        <SolidColorBrush x:Key="AccentBrush" Color="#5B8CFF" />
+        <SolidColorBrush x:Key="BgBrush" Color="#16171C" />
+        <SolidColorBrush x:Key="PanelBrush" Color="#20222A" />
+        <SolidColorBrush x:Key="PanelBrush2" Color="#2A2D36" />
+        <SolidColorBrush x:Key="TextBrush" Color="#F1F2F6" />
+        <SolidColorBrush x:Key="SubTextBrush" Color="#9AA0AC" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#33363F" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{StaticResource BgBrush}" />
+            <Setter Property="FontFamily" Value="{StaticResource ContentControlThemeFontFamily}" />
+        </Style>
+
+        <!-- Toolbar buttons -->
+        <Style Selector="Button.toolbar">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Button.toolbar:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PanelBrush2}" />
+        </Style>
+        <Style Selector="Button.toolbar:disabled">
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#6E9BFF" />
+        </Style>
+
+        <Style Selector="ToggleButton.view">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource SubTextBrush}" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ToggleButton.view:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+    </Application.Styles>
+</Application>

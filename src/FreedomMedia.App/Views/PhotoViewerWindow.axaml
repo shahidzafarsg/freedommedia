@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FreedomMedia.App.Views.PhotoViewerWindow"
+        Title="Photo"
+        Width="1100" Height="760"
+        WindowStartupLocation="CenterOwner"
+        Background="Black">
+    <Grid>
+        <Image x:Name="ImageView" Stretch="Uniform" />
+
+        <!-- Top bar -->
+        <Border x:Name="TopBar" VerticalAlignment="Top" Background="#B0000000" Padding="16,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="TitleText" Grid.Column="0" Foreground="White" FontSize="14"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="1" Content="Close" Click="OnClose" Classes="toolbar"
+                        Foreground="White" />
+            </Grid>
+        </Border>
+
+        <!-- Navigation -->
+        <Button x:Name="PrevButton" Content="‹" FontSize="34" Click="OnPrev"
+                HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0"
+                Width="56" Height="80" Foreground="White" Background="#60000000" />
+        <Button x:Name="NextButton" Content="›" FontSize="34" Click="OnNext"
+                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0"
+                Width="56" Height="80" Foreground="White" Background="#60000000" />
+
+        <Border VerticalAlignment="Bottom" Background="#B0000000" Padding="16,8">
+            <TextBlock x:Name="CounterText" Foreground="#D0D5DD" FontSize="12.5"
+                       HorizontalAlignment="Center" />
+        </Border>
+    </Grid>
+</Window>

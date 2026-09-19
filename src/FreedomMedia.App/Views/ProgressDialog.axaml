@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FreedomMedia.App.Views.ProgressDialog"
+        Title="Working"
+        Width="460" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{StaticResource BgBrush}">
+    <StackPanel Margin="26">
+        <TextBlock x:Name="HeadingText" Text="Working…" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{StaticResource TextBrush}" Margin="0,0,0,10" />
+        <TextBlock x:Name="ItemText" Text="" Foreground="{StaticResource SubTextBrush}" FontSize="12"
+                   TextTrimming="CharacterEllipsis" Margin="0,0,0,10" />
+        <ProgressBar x:Name="Bar" Minimum="0" Maximum="100" Value="0" Height="8" />
+        <TextBlock x:Name="PercentText" Text="0%" Foreground="{StaticResource SubTextBrush}" FontSize="12"
+                   HorizontalAlignment="Right" Margin="0,8,0,16" />
+        <Button x:Name="CancelButton" Content="Cancel" HorizontalAlignment="Right" Width="96" Click="OnCancel" />
+    </StackPanel>
+</Window>

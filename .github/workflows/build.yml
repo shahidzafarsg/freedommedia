@@ -1,0 +1,142 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to attach the builds to (leave empty to only build and test)
+        required: false
+        default: ''
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Vault core self-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Run the vault round-trip self-test
+        run: dotnet run --project tools/FreedomMedia.SelfTest -c Release
+
+  windows:
+    name: Windows (x64)
+    runs-on: windows-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish (self-contained folder, so the LibVLC plugins ship intact)
+        shell: bash
+        run: |
+          dotnet publish src/FreedomMedia.App -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=false -o publish/win-x64
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          cd publish/win-x64
+          7z a -tzip ../../dist/FreedomMedia-windows-x64.zip . >/dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: freedommedia-windows-x64
+          path: dist/FreedomMedia-windows-x64.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release' || inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" dist/FreedomMedia-windows-x64.zip --clobber
+
+  macos:
+    name: macOS (Apple Silicon and Intel)
+    runs-on: macos-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        rid: [osx-arm64, osx-x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish (${{ matrix.rid }})
+        run: |
+          dotnet publish src/FreedomMedia.App -c Release -r ${{ matrix.rid }} --self-contained true \
+            -p:PublishSingleFile=false -o publish/${{ matrix.rid }}
+
+      - name: Assemble the .app bundle
+        run: |
+          APP="dist/FreedomMedia.app"
+          rm -rf "$APP"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp -R publish/${{ matrix.rid }}/* "$APP/Contents/MacOS/"
+
+          # Icon: build an .icns from the committed 1024px master.
+          ICONSET="icon.iconset"
+          rm -rf "$ICONSET"; mkdir "$ICONSET"
+          SRC="src/FreedomMedia.App/Assets/freedommedia-1024.png"
+          for s in 16 32 64 128 256 512; do
+            sips -z $s $s "$SRC" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
+            d=$((s*2)); sips -z $d $d "$SRC" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
+          done
+          iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/freedommedia.icns"
+
+          VERSION="${{ github.event.release.tag_name || inputs.tag || '1.0.0' }}"
+          VERSION="${VERSION#v}"
+          cat > "$APP/Contents/Info.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>FreedomMedia</string>
+            <key>CFBundleDisplayName</key><string>FreedomMedia</string>
+            <key>CFBundleIdentifier</key><string>uk.freedomsoft.freedommedia</string>
+            <key>CFBundleVersion</key><string>${VERSION}</string>
+            <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleExecutable</key><string>FreedomMedia</string>
+            <key>CFBundleIconFile</key><string>freedommedia</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSApplicationCategoryType</key><string>public.app-category.photography</string>
+          </dict>
+          </plist>
+          PLIST
+
+          chmod +x "$APP/Contents/MacOS/FreedomMedia"
+
+      - name: Zip the bundle
+        run: |
+          cd dist
+          ARCH=$(echo "${{ matrix.rid }}" | sed 's/osx-//')
+          ditto -c -k --keepParent FreedomMedia.app "FreedomMedia-macos-${ARCH}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: freedommedia-macos-${{ matrix.rid }}
+          path: dist/FreedomMedia-macos-*.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release' || inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" dist/FreedomMedia-macos-*.zip --clobber

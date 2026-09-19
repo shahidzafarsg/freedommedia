@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+        x:Class="FreedomMedia.App.Views.VideoPlayerWindow"
+        Title="Video"
+        Width="1100" Height="760"
+        WindowStartupLocation="CenterOwner"
+        Background="Black">
+    <Grid>
+        <vlc:VideoView x:Name="VideoView" />
+
+        <Border VerticalAlignment="Bottom" Background="#C0000000" Padding="16,10" x:Name="ControlBar">
+            <StackPanel Spacing="8">
+                <TextBlock x:Name="InfoText" Foreground="#C0C6D0" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                <Grid ColumnDefinitions="Auto,*,Auto" >
+                    <TextBlock x:Name="PositionText" Grid.Column="0" Foreground="White" FontSize="12"
+                               VerticalAlignment="Center" Width="58" />
+                    <Slider x:Name="SeekBar" Grid.Column="1" Minimum="0" Maximum="1000" Value="0"
+                            VerticalAlignment="Center" Margin="8,0" />
+                    <TextBlock x:Name="DurationText" Grid.Column="2" Foreground="White" FontSize="12"
+                               VerticalAlignment="Center" Width="58" TextAlignment="Right" />
+                </Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
+                    <Button x:Name="BackButton" Content="« 10s" Click="OnBack" Classes="toolbar" Foreground="White" />
+                    <Button x:Name="PlayPauseButton" Content="Pause" Click="OnPlayPause" Classes="toolbar" Foreground="White" Width="90" />
+                    <Button x:Name="StopButton" Content="Stop" Click="OnStop" Classes="toolbar" Foreground="White" />
+                    <Button x:Name="ForwardButton" Content="10s »" Click="OnForward" Classes="toolbar" Foreground="White" />
+                    <Button Content="Close" Click="OnClose" Classes="toolbar" Foreground="White" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
