@@ -5,27 +5,85 @@
         Width="1100" Height="760"
         WindowStartupLocation="CenterOwner"
         Background="Black">
-    <Grid>
-        <Image x:Name="VideoImage" Stretch="Uniform" />
+    <Window.Styles>
+        <Style Selector="Button.mediabtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="48" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.mediabtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#33FFFFFF" />
+        </Style>
+        <Style Selector="Button.mediabtn Path">
+            <Setter Property="Fill" Value="#F1F2F6" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.mediabtn.big">
+            <Setter Property="Width" Value="56" />
+            <Setter Property="Height" Value="46" />
+        </Style>
+    </Window.Styles>
 
-        <Border VerticalAlignment="Bottom" Background="#C0000000" Padding="16,10" x:Name="ControlBar">
-            <StackPanel Spacing="8">
-                <TextBlock x:Name="InfoText" Foreground="#C0C6D0" FontSize="12.5" TextTrimming="CharacterEllipsis" />
-                <Grid ColumnDefinitions="Auto,*,Auto" >
-                    <TextBlock x:Name="PositionText" Grid.Column="0" Foreground="White" FontSize="12"
-                               VerticalAlignment="Center" Width="58" />
+    <Grid>
+        <Image x:Name="VideoImage" Stretch="Uniform" DoubleTapped="OnVideoDoubleTapped" />
+
+        <Border x:Name="ControlBar" VerticalAlignment="Bottom" Padding="18,12,18,14">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#00000000" />
+                    <GradientStop Offset="0.35" Color="#B0000000" />
+                    <GradientStop Offset="1" Color="#E6000000" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Spacing="6">
+                <TextBlock x:Name="InfoText" Foreground="#C6CCD6" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock x:Name="PositionText" Grid.Column="0" Text="0:00" Foreground="White" FontSize="12"
+                               VerticalAlignment="Center" Width="56" />
                     <Slider x:Name="SeekBar" Grid.Column="1" Minimum="0" Maximum="1000" Value="0"
                             VerticalAlignment="Center" Margin="8,0" />
-                    <TextBlock x:Name="DurationText" Grid.Column="2" Foreground="White" FontSize="12"
-                               VerticalAlignment="Center" Width="58" TextAlignment="Right" />
+                    <TextBlock x:Name="DurationText" Grid.Column="2" Text="0:00" Foreground="White" FontSize="12"
+                               VerticalAlignment="Center" Width="56" TextAlignment="Right" />
                 </Grid>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
-                    <Button x:Name="BackButton" Content="« 10s" Click="OnBack" Classes="toolbar" Foreground="White" />
-                    <Button x:Name="PlayPauseButton" Content="Pause" Click="OnPlayPause" Classes="toolbar" Foreground="White" Width="90" />
-                    <Button x:Name="StopButton" Content="Stop" Click="OnStop" Classes="toolbar" Foreground="White" />
-                    <Button x:Name="ForwardButton" Content="10s »" Click="OnForward" Classes="toolbar" Foreground="White" />
-                    <Button Content="Close" Click="OnClose" Classes="toolbar" Foreground="White" />
-                </StackPanel>
+
+                <Grid ColumnDefinitions="*,Auto,*">
+                    <!-- Transport, centred -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                        <Button Classes="mediabtn" Click="OnBack" ToolTip.Tip="Back 10 seconds">
+                            <Path Data="M12 6v12l-8-6zM20 6v12l-8-6z" Width="22" Height="22" />
+                        </Button>
+                        <Button x:Name="PlayPauseButton" Classes="mediabtn big" Click="OnPlayPause" ToolTip.Tip="Play/Pause">
+                            <Path x:Name="PlayPauseIcon" Data="M6 5h4v14H6zM14 5h4v14h-4z" Width="24" Height="24" />
+                        </Button>
+                        <Button Classes="mediabtn" Click="OnStop" ToolTip.Tip="Stop and close">
+                            <Path Data="M6 6h12v12H6z" Width="20" Height="20" />
+                        </Button>
+                        <Button Classes="mediabtn" Click="OnForward" ToolTip.Tip="Forward 10 seconds">
+                            <Path Data="M4 6v12l8-6zM12 6v12l8-6z" Width="22" Height="22" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Fullscreen + close, right -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                        <Button x:Name="FullscreenButton" Classes="mediabtn" Click="OnFullscreen" ToolTip.Tip="Full screen">
+                            <Path x:Name="FullscreenIcon"
+                                  Data="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                                  Width="22" Height="22" />
+                        </Button>
+                        <Button Classes="mediabtn" Click="OnClose" ToolTip.Tip="Close">
+                            <Path Data="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 10.6 12 4.3 5.7 5.7 4.3 12 10.6 16.9 4.3z"
+                                  Width="20" Height="20" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Border>
     </Grid>
