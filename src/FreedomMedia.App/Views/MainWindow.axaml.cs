@@ -167,17 +167,26 @@ public partial class MainWindow : Window
         if (sel is MediaItemViewModel vm) OpenItem(vm);
     }
 
-    private void OpenItem(MediaItemViewModel vm)
+    private async void OpenItem(MediaItemViewModel vm)
     {
         if (_session == null) return;
-        if (vm.IsVideo)
+        try
         {
-            _ = new VideoPlayerWindow(_session, vm.Entry).ShowDialog(this);
+            if (vm.IsVideo)
+            {
+                _ = new VideoPlayerWindow(_session, vm.Entry).ShowDialog(this);
+            }
+            else
+            {
+                var images = _items.Where(i => !i.IsVideo).Select(i => i.Entry);
+                _ = new PhotoViewerWindow(_session, images, vm.Entry).ShowDialog(this);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var images = _items.Where(i => !i.IsVideo).Select(i => i.Entry);
-            _ = new PhotoViewerWindow(_session, images, vm.Entry).ShowDialog(this);
+            AppLog.Exception("OpenItem", ex);
+            await Dialogs.InfoAsync(this, "Could not open item",
+                $"Something went wrong opening \"{vm.Title}\".\n\n{ex.Message}\n\nA log was written to:\n{AppLog.LogPath}");
         }
     }
 

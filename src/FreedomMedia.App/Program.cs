@@ -4,11 +4,21 @@ namespace FreedomMedia.App;
 
 internal static class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any SynchronizationContext
-    // related code before AppMain is called: things aren't initialized yet and stuff will break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        AppLog.InstallGlobalHandlers();
+        AppLog.Write($"FreedomMedia starting (OS: {Environment.OSVersion}, 64-bit: {Environment.Is64BitProcess})");
+        try
+        {
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Exception("Program.Main", ex);
+            throw;
+        }
+    }
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()

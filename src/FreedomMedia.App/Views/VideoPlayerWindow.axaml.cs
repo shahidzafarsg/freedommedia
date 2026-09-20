@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using FreedomMedia.App.Models;
+using FreedomMedia.App.Services;
 using FreedomMedia.Core;
 using LibVLCSharp.Shared;
 
@@ -19,6 +20,7 @@ public partial class VideoPlayerWindow : Window
     private MediaPlayer? _player;
     private VaultEntryStream? _stream;
     private Media? _media;
+    private VlcVideoRenderer? _renderer;
     private DispatcherTimer? _timer;
     private bool _seeking;
 
@@ -49,15 +51,20 @@ public partial class VideoPlayerWindow : Window
         if (_session == null || _entry == null) return;
         try
         {
-            if (!_coreInitialized) { LibVLCSharp.Shared.Core.Initialize(); _coreInitialized = true; }
+            AppLog.Write($"video: starting '{_entry.Title}' ({_entry.OriginalFileName})");
+            if (!_coreInitialized) { LibVLCSharp.Shared.Core.Initialize(); _coreInitialized = true; AppLog.Write("video: LibVLC Core.Initialize ok"); }
 
             _libVLC = new LibVLC();
             _player = new MediaPlayer(_libVLC);
-            VideoView.MediaPlayer = _player;
+
+            _renderer = new VlcVideoRenderer(VideoImage, _entry.Width, _entry.Height);
+            _renderer.Attach(_player);
+            AppLog.Write("video: renderer attached");
 
             _stream = _session.OpenEntryStream(_entry);
             _media = new Media(_libVLC, new StreamMediaInput(_stream));
             _player.Play(_media);
+            AppLog.Write("video: Play() returned");
 
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
             _timer.Tick += OnTick;
@@ -72,6 +79,7 @@ public partial class VideoPlayerWindow : Window
         }
         catch (Exception ex)
         {
+            AppLog.Exception("VideoPlayerWindow.Start", ex);
             InfoText.Text = $"Could not play this video: {ex.Message}";
         }
     }
@@ -138,11 +146,11 @@ public partial class VideoPlayerWindow : Window
             if (_player != null)
             {
                 _player.Stop();
-                VideoView.MediaPlayer = null;
                 _player.Dispose();
             }
         }
-        catch { /* best effort teardown */ }
+        catch (Exception ex) { AppLog.Exception("VideoPlayerWindow teardown", ex); }
+        _renderer?.Dispose();
         _media?.Dispose();
         _stream?.Dispose();
         _libVLC?.Dispose();
@@ -150,6 +158,7 @@ public partial class VideoPlayerWindow : Window
         _media = null;
         _stream = null;
         _libVLC = null;
+        _renderer = null;
         base.OnClosed(e);
     }
 }

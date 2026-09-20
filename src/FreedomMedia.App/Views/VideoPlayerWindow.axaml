@@ -1,13 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
         x:Class="FreedomMedia.App.Views.VideoPlayerWindow"
         Title="Video"
         Width="1100" Height="760"
         WindowStartupLocation="CenterOwner"
         Background="Black">
     <Grid>
-        <vlc:VideoView x:Name="VideoView" />
+        <Image x:Name="VideoImage" Stretch="Uniform" />
 
         <Border VerticalAlignment="Bottom" Background="#C0000000" Padding="16,10" x:Name="ControlBar">
             <StackPanel Spacing="8">
