@@ -29,7 +29,7 @@ jobs:
         run: dotnet run --project tools/FreedomMedia.SelfTest -c Release
 
   windows:
-    name: Windows (x64)
+    name: Windows installer (x64)
     runs-on: windows-latest
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     steps:
@@ -44,17 +44,21 @@ jobs:
           dotnet publish src/FreedomMedia.App -c Release -r win-x64 --self-contained true \
             -p:PublishSingleFile=false -o publish/win-x64
 
-      - name: Package
-        shell: bash
+      - name: Build installer (Inno Setup)
+        shell: pwsh
         run: |
-          mkdir -p dist
-          cd publish/win-x64
-          7z a -tzip ../../dist/FreedomMedia-windows-x64.zip . >/dev/null
+          choco install innosetup -y --no-progress
+          $version = "${{ github.event.release.tag_name || inputs.tag || '1.0.0' }}".TrimStart('v')
+          New-Item -ItemType Directory -Force dist | Out-Null
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=$version" "/DSrcDir=$PWD\publish\win-x64" "/DOutDir=$PWD\dist" `
+            installer\windows\FreedomMedia.iss
+          Get-ChildItem dist
 
       - uses: actions/upload-artifact@v4
         with:
-          name: freedommedia-windows-x64
-          path: dist/FreedomMedia-windows-x64.zip
+          name: freedommedia-windows-installer
+          path: dist/FreedomMedia-Setup-x64.exe
 
       - name: Attach to release
         if: github.event_name == 'release' || inputs.tag != ''
@@ -62,10 +66,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$TAG" dist/FreedomMedia-windows-x64.zip --clobber
+        run: gh release upload "$TAG" dist/FreedomMedia-Setup-x64.exe --clobber
 
   macos:
-    name: macOS (Apple Silicon and Intel)
+    name: macOS installer (Apple Silicon and Intel)
     runs-on: macos-latest
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     strategy:
@@ -89,7 +93,6 @@ jobs:
           mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
           cp -R publish/${{ matrix.rid }}/* "$APP/Contents/MacOS/"
 
-          # Icon: build an .icns from the committed 1024px master.
           ICONSET="icon.iconset"
           rm -rf "$ICONSET"; mkdir "$ICONSET"
           SRC="src/FreedomMedia.App/Assets/freedommedia-1024.png"
@@ -123,20 +126,27 @@ jobs:
 
           chmod +x "$APP/Contents/MacOS/FreedomMedia"
 
-      - name: Zip the bundle
+      - name: Ad-hoc sign (required for the app to launch on Apple Silicon)
+        run: codesign --force --deep --sign - "dist/FreedomMedia.app"
+
+      - name: Build .dmg (drag to Applications)
         run: |
-          cd dist
           ARCH=$(echo "${{ matrix.rid }}" | sed 's/osx-//')
-          ditto -c -k --keepParent FreedomMedia.app "FreedomMedia-macos-${ARCH}.zip"
+          STAGE=dmgstage
+          rm -rf "$STAGE"; mkdir "$STAGE"
+          cp -R "dist/FreedomMedia.app" "$STAGE/"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create -volname "FreedomMedia" -srcfolder "$STAGE" -ov -format UDZO \
+            "dist/FreedomMedia-macos-${ARCH}.dmg"
 
       - uses: actions/upload-artifact@v4
         with:
           name: freedommedia-macos-${{ matrix.rid }}
-          path: dist/FreedomMedia-macos-*.zip
+          path: dist/FreedomMedia-macos-*.dmg
 
       - name: Attach to release
         if: github.event_name == 'release' || inputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$TAG" dist/FreedomMedia-macos-*.zip --clobber
+        run: gh release upload "$TAG" dist/FreedomMedia-macos-*.dmg --clobber

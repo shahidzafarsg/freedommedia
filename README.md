@@ -35,13 +35,15 @@ and everything remains encrypted on disk when the vault is closed.
 
 ## Download
 
-Ready-to-run builds for Windows and macOS are published on the
+Installers for Windows and macOS are published on the
 [releases page](https://github.com/shahidzafarsg/freedommedia/releases/latest).
 
-- **Windows**: download the `.zip` for your processor (x64 or ARM64), unzip it, and run
-  `FreedomMedia.exe`.
-- **macOS**: download the `.zip`, move `FreedomMedia.app` to Applications. The build is not
-  code-signed, so the first time you open it, right-click the app and choose Open, then confirm.
+- **Windows**: download `FreedomMedia-Setup-x64.exe` and run it. It installs per-user, so no
+  administrator prompt is required. Windows SmartScreen may warn about an unrecognised publisher
+  because the installer is not code-signed; choose More info, then Run anyway.
+- **macOS**: download the `.dmg` for your processor (`arm64` for Apple Silicon, `x64` for Intel),
+  open it, and drag FreedomMedia to Applications. The app is ad-hoc signed but not notarised, so
+  the first time you open it, right-click it and choose Open, then confirm.
 
 ## How the encryption works
 
